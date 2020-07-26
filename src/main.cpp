@@ -9,8 +9,25 @@ Mathf math;
 
 static UnityEngine::Vector3 center = UnityEngine::Vector3{0, 0.9f, 0};
 
+AudioTimeSyncController* audioSync = nullptr;
+UnityEngine::Vector3 _prevHeadPos = UnityEngine::Vector3{0, 0, 0};
+
+UnityEngine::Vector3 _prevLeftHandlePos = UnityEngine::Vector3{0, 0, 0};
+
+UnityEngine::Vector3 _prevRightHandlePos = UnityEngine::Vector3{0, 0, 0};
+
+void SetTimeScale(float timeScale)
+{
+    audioSync->timeScale = timeScale;
+    audioSync->audioSource->set_pitch(timeScale);
+}
+
 MAKE_HOOK_OFFSETLESS(NoteJump_ManualUpdate, UnityEngine::Vector3, NoteJump* self) {
     NoteJump_ManualUpdate(self);
+    if(audioSync != nullptr)
+    {
+        audioSync = self->audioTimeSyncController;
+    }
     if(Config.parabola)
     {
         float time = self->audioTimeSyncController->songTime - self->beatTime + self->jumpDuration * 0.5f;
@@ -97,6 +114,12 @@ MAKE_HOOK_OFFSETLESS(ScoreDisabler, void, LevelScoreUploader* self, LevelScoreRe
 }
 
 MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
+    //if(audioSync != nullptr)
+    //{
+    //    auto audioSyncs = Resources::FindObjectsOfTypeAll<AudioTimeSyncController>();
+    //    audioSync = audioSyncs->values;
+    //}
+    
     if(Config.Headbang)
     {
         self->get_rightSaber()->get_transform()->set_rotation(self->get_headRot());
@@ -115,7 +138,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
         self->get_leftSaber()->get_transform()->set_localScale(UnityEngine::Vector3{2.0f, 2.0f, 0.5f});
     }
 
-    if(Config.BoxingMode)
+    /*if(Config.BoxingMode)
     {
         self->get_rightSaber()->get_transform()->Translate(UnityEngine::Vector3{0.00f, 0.0f, -0.23f}, 1);
         self->get_leftSaber()->get_transform()->Translate(UnityEngine::Vector3{0.00f, 0.0f, -0.23f}, 1);
@@ -123,6 +146,18 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
         self->get_rightSaber()->get_transform()->set_localScale(UnityEngine::Vector3{4.0f, 4.0f, 0.25f});
         self->get_leftSaber()->get_transform()->set_localScale(UnityEngine::Vector3{4.0f, 4.0f, 0.25f});   
     }
+
+    if(Config.SuperHot && audioSync != nullptr)
+    {
+        float num = 0.0f;
+        num = math.Max(num, UnityEngine::Vector3::Distance(self->get_leftSaber()->get_handlePos(), _prevLeftHandlePos));
+        num = math.Max(num, UnityEngine::Vector3::Distance(self->get_rightSaber()->get_handlePos(), _prevRightHandlePos));
+        num = math.Clamp01(num *50.0f);
+        SetTimeScale(num);
+        _prevHeadPos = self->get_headPos();
+        _prevLeftHandlePos = self->get_leftSaber()->get_handlePos();
+        _prevRightHandlePos = self->get_rightSaber()->get_handlePos();
+    }*/
 
     PlayerController_Update(self);
 }

@@ -20,6 +20,7 @@
 #include "codegen/include/UnityEngine/Transform.hpp"
 #include "codegen/include/UnityEngine/Resources.hpp"
 #include "codegen/include/UnityEngine/Space.hpp"
+#include "codegen/include/UnityEngine/AudioSource.hpp"
 
 #include "codegen/include/System/Linq/Enumerable.hpp"
 
