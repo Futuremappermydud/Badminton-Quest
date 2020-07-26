@@ -10,6 +10,7 @@
 #include "codegen/include/GlobalNamespace/INoteController.hpp"
 #include "codegen/include/GlobalNamespace/NoteCutInfo.hpp"
 #include "codegen/include/GlobalNamespace/Saber.hpp"
+#include "codegen/include/GlobalNamespace/NoteCutEffectSpawner.hpp"
 
 #include "codegen/include/OnlineServices/LevelScoreUploader.hpp"
 #include "codegen/include/OnlineServices/LevelScoreResultsData.hpp"

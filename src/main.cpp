@@ -5,8 +5,6 @@ using namespace OnlineServices;
 using namespace UnityEngine;
 using namespace il2cpp_utils;
 
-UnityEngine::Vector3 TopBladePos;
-
 Mathf math;
 
 static UnityEngine::Vector3 center = UnityEngine::Vector3{0, 0.9f, 0};
@@ -53,7 +51,7 @@ MAKE_HOOK_OFFSETLESS(NoteJump_ManualUpdate, UnityEngine::Vector3, NoteJump* self
 
         if(amount >  0.7f)
         {
-            UnityEngine::Vector3 endPos = TopBladePos;
+            UnityEngine::Vector3 endPos = self->playerController->get_rightSaber()->get_saberBladeTopPos();
             float t = (amount - 0.5f) * 2;
             t = t * t * t * t;
             self->localPosition.x = math.Lerp(self->localPosition.x, endPos.x, t);
@@ -90,21 +88,28 @@ MAKE_HOOK_OFFSETLESS(ScoreDisabler, void, LevelScoreUploader* self, LevelScoreRe
     ScoreDisabler(self, levelScoreResultsData);
 }
 
-MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
-    PlayerController_Update(self);
-    TopBladePos = self->get_rightSaber()->get_saberBladeTopPos();
-}
-
-MAKE_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, void, PlayerController* self, UnityEngine::Vector3 pos, INoteController noteController, NoteCutInfo noteCutInfo) {
+MAKE_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, void, NoteCutEffectSpawner* self, UnityEngine::Vector3 pos, INoteController* noteController, NoteCutInfo* noteCutInfo) {
     if(!Config.Vaccum) return;
 
     NoteCutEffectSpawner_SpawnNoteCutEffect(self, pos, noteController, noteCutInfo);
 }
 
-MAKE_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnBombCutEffect, void, PlayerController* self, UnityEngine::Vector3 pos, INoteController noteController, NoteCutInfo noteCutInfo) {
+MAKE_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnBombCutEffect, void, NoteCutEffectSpawner* self, UnityEngine::Vector3 pos, INoteController* noteController, NoteCutInfo* noteCutInfo) {
     if(!Config.Vaccum) return;
 
     NoteCutEffectSpawner_SpawnBombCutEffect(self, pos, noteController, noteCutInfo);
+}
+
+MAKE_HOOK_OFFSETLESS(BeatmapObjectManager_SpawnBasicNote, void, BeatmapObjectManager* self, NoteData* noteData, UnityEngine::Vector3 moveStartPos, UnityEngine::Vector3 moveEndPos, UnityEngine::Vector3 jumpEndPos, float moveDuration, float jumpDuration, float jumpGravity, float rotation, bool disappearingArrow, bool ghostNote, float cutDirectionAngleOffset) {
+    if(Config.noRed && noteData->get_noteType().value == 0) return;
+    if(Config.noBlue && noteData->get_noteType().value == 1) return;
+
+    if(Config.blueToRed)
+        noteData->set_noteType(0);
+    if(Config.redToBlue)
+        noteData->set_noteType(1);
+    
+    BeatmapObjectManager_SpawnBasicNote(self, noteData, moveStartPos, moveEndPos, jumpEndPos, moveDuration, jumpDuration, jumpGravity, rotation, disappearingArrow, ghostNote, cutDirectionAngleOffset);
 }
 
 void SaveConfig() {
@@ -184,7 +189,7 @@ bool LoadConfig() {
 extern "C" void setup(ModInfo& info) {
     // Set the ID and version of this mod
     info.id = "Badminton";
-    info.version = "0.1.0";
+    info.version = "0.1.1";
     modInfo = info;
 
     getLogger().info("Modloader name: %s", Modloader::getInfo().name.c_str());
@@ -206,9 +211,8 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(NoteJump_ManualUpdate, FindMethodUnsafe("", "NoteJump", "ManualUpdate", 0));
     INSTALL_HOOK_OFFSETLESS(NoteMovement_Init, FindMethodUnsafe("", "NoteMovement", "Init", 11));
     INSTALL_HOOK_OFFSETLESS(ScoreDisabler, FindMethodUnsafe("OnlineServices", "LevelScoreUploader", "SendLevelScoreResult", 1));
-    INSTALL_HOOK_OFFSETLESS(PlayerController_Update, FindMethodUnsafe("", "PlayerController", "Update", 0));
-    //INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnNoteCutEffect", 3));
-    //INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnBombCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnBombCutEffect", 3));
-
+    INSTALL_HOOK_OFFSETLESS(BeatmapObjectManager_SpawnBasicNote, FindMethodUnsafe("", "BeatmapObjectManager", "SpawnBasicNote", 11));
+    INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnNoteCutEffect", 3));
+    INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnBombCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnBombCutEffect", 3));
     getLogger().debug("Installed all hooks!");
 }
