@@ -85,7 +85,7 @@ MAKE_HOOK_OFFSETLESS(NoteMovement_Init, void, NoteMovement* self, float beatTime
 }
 
 MAKE_HOOK_OFFSETLESS(ScoreDisabler, void, LevelScoreUploader* self, LevelScoreResultsData* levelScoreResultsData) {
-    if(Config.parabola || Config.blueToRed || Config.redToBlue || Config.noBlue || Config.noRed || Config.Vaccum || Config.Centering)
+    if(Config.parabola || Config.blueToRed || Config.redToBlue || Config.noBlue || Config.noRed || Config.Vaccum || Config.Centering || Config.Headbang || Config.SuperHot || Config.BoxingMode)
     {
         setenv("disable_ss_upload", "1", true);
         return;
@@ -94,6 +94,37 @@ MAKE_HOOK_OFFSETLESS(ScoreDisabler, void, LevelScoreUploader* self, LevelScoreRe
         setenv("disable_ss_upload", "0", true);
     
     ScoreDisabler(self, levelScoreResultsData);
+}
+
+MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
+    if(Config.Headbang)
+    {
+        self->get_rightSaber()->get_transform()->set_rotation(self->get_headRot());
+        self->get_leftSaber()->get_transform()->set_rotation(self->get_headRot());
+
+        self->get_rightSaber()->get_transform()->Rotate(UnityEngine::Vector3{270.0f, 0.0f, 0.0f});
+        self->get_leftSaber()->get_transform()->Rotate(UnityEngine::Vector3{270.0f, 0.0f, 0.0f});
+
+        self->get_rightSaber()->get_transform()->set_position(self->get_headPos());
+        self->get_leftSaber()->get_transform()->set_position(self->get_headPos());
+
+        self->get_rightSaber()->get_transform()->Translate(UnityEngine::Vector3{0.05f, 0.0f, -0.2f}, 1);
+        self->get_leftSaber()->get_transform()->Translate(UnityEngine::Vector3{0.05f, 0.0f, -0.2f}, 1);
+
+        self->get_rightSaber()->get_transform()->set_localScale(UnityEngine::Vector3{2.0f, 2.0f, 0.5f});
+        self->get_leftSaber()->get_transform()->set_localScale(UnityEngine::Vector3{2.0f, 2.0f, 0.5f});
+    }
+
+    if(Config.BoxingMode)
+    {
+        self->get_rightSaber()->get_transform()->Translate(UnityEngine::Vector3{0.00f, 0.0f, -0.23f}, 1);
+        self->get_leftSaber()->get_transform()->Translate(UnityEngine::Vector3{0.00f, 0.0f, -0.23f}, 1);
+
+        self->get_rightSaber()->get_transform()->set_localScale(UnityEngine::Vector3{4.0f, 4.0f, 0.25f});
+        self->get_leftSaber()->get_transform()->set_localScale(UnityEngine::Vector3{4.0f, 4.0f, 0.25f});   
+    }
+
+    PlayerController_Update(self);
 }
 
 MAKE_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, void, NoteCutEffectSpawner* self, UnityEngine::Vector3 pos, INoteController* noteController, NoteCutInfo* noteCutInfo) {
@@ -124,7 +155,7 @@ MAKE_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, void, NoteBasicCutInfo* s
     if(Config.BoxingMode || Config.Vaccum)
         saberBladeSpeed = 3.0f;
 
-    NoteBasicCutInfo_GetBasicCutInfo(self, noteTransform, noteType, cutDirection, saberType, saberBladeSpeed, cutDirVec, directionOK, speedOK, saberTypeOK, cutDirDeviation);
+    //NoteBasicCutInfo_GetBasicCutInfo(self, noteTransform, noteType, cutDirection, saberType, saberBladeSpeed, cutDirVec, directionOK, speedOK, saberTypeOK, cutDirDeviation);
     if(Config.Vaccum && (noteType.value != 3))
     {
         directionOK = true;
@@ -145,6 +176,8 @@ void SaveConfig() {
     getConfig().config.AddMember("Vaccum", Config.Vaccum, allocator);
     getConfig().config.AddMember("Center Notes", Config.Centering, allocator);
     getConfig().config.AddMember("Boxing Mode", Config.BoxingMode, allocator);
+    getConfig().config.AddMember("Super Hot", Config.SuperHot, allocator);
+    getConfig().config.AddMember("Head Bang", Config.Headbang, allocator);
 
     getConfig().Write();
 }   
@@ -206,6 +239,18 @@ bool LoadConfig() {
     else {
         foundEverything = false;
     }
+    if (getConfig().config.HasMember("Head Bang") && getConfig().config["Head Bang"].IsBool()) {
+        Config.Headbang = getConfig().config["Head Bang"].GetBool();
+    }
+    else {
+        foundEverything = false;
+    }
+    if (getConfig().config.HasMember("Super Hot") && getConfig().config["Super Hot"].IsBool()) {
+        Config.SuperHot = getConfig().config["Super Hot"].GetBool();
+    }
+    else {
+        foundEverything = false;
+    }
 
     if (foundEverything) {
         return true;
@@ -236,11 +281,12 @@ extern "C" void load() {
     il2cpp_functions::Init();
 
     INSTALL_HOOK_OFFSETLESS(NoteJump_ManualUpdate, FindMethodUnsafe("", "NoteJump", "ManualUpdate", 0));
+    INSTALL_HOOK_OFFSETLESS(PlayerController_Update, FindMethodUnsafe("", "PlayerController", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(NoteMovement_Init, FindMethodUnsafe("", "NoteMovement", "Init", 11));
     INSTALL_HOOK_OFFSETLESS(ScoreDisabler, FindMethodUnsafe("OnlineServices", "LevelScoreUploader", "SendLevelScoreResult", 1));
     INSTALL_HOOK_OFFSETLESS(BeatmapObjectManager_SpawnBasicNote, FindMethodUnsafe("", "BeatmapObjectManager", "SpawnBasicNote", 11));
     INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnNoteCutEffect", 3));
     INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnBombCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnBombCutEffect", 3));
-    INSTALL_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, FindMethodUnsafe("", "NoteBasicCutInfo", "GetBasicCutInfo", 10));
+    //INSTALL_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, FindMethodUnsafe("", "NoteBasicCutInfo", "GetBasicCutInfo", 10));
     getLogger().debug("Installed all hooks!");
 }

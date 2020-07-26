@@ -19,6 +19,7 @@
 #include "codegen/include/UnityEngine/Mathf.hpp"
 #include "codegen/include/UnityEngine/Transform.hpp"
 #include "codegen/include/UnityEngine/Resources.hpp"
+#include "codegen/include/UnityEngine/Space.hpp"
 
 #include "codegen/include/System/Linq/Enumerable.hpp"
 
@@ -63,6 +64,8 @@ static struct Config_t {
     bool Vaccum = false;
     bool Centering = false;
     bool BoxingMode = false;
+    bool SuperHot = false;
+    bool Headbang = false;
 } Config;
 
 extern void SaveConfig();
