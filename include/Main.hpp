@@ -53,13 +53,14 @@ static const Logger& getLogger() {
 }
 
 static struct Config_t {
-    bool parabola = false;
-    float parabolaOffsetY = 1.8f;
+    bool parabola = true;
+    float parabolaOffsetY = 1.8000000000f;
 	bool noBlue = false;
 	bool noRed = false;
-	bool redToBlue = false;
+	bool redToBlue = true;
 	bool blueToRed = false;
-    bool Vaccum = true;
+    bool Vaccum = false;
+    bool Centering = false;
 } Config;
 
 extern void SaveConfig();
