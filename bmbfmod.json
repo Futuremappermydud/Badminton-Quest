@@ -1,0 +1,35 @@
+{
+    "id": "Badminton",
+    "name": "Badminton",
+    "author": "Originally by Nalululuna for pc, Ported by Futuremappermydud",
+    "description": [
+        
+        "Tennis Time!"
+        
+    ],
+    "category": "Gameplay",
+    "gameVersion": "1.10.0",
+    "version": "0.1.0",
+    "platform": "Quest",
+    "components": [
+        {
+            "type": "HookMod",
+            "installAction": {
+                "installLibraryFile": "libbadminton.so"
+            },
+            "uninstallAction": {
+                "removeLibraryFile": "libbadminton.so"
+            }
+        },
+        {
+            "type": "FileCopyMod",
+            "sourceFileName": "libbeatsaber-hook_2019_2_1f1_0_1_2.so",
+            "targetRootedPathAndFileName": "/sdcard/Android/data/com.beatgames.beatsaber/files/libs/libbeatsaber-hook_2019_2_1f1_0_1_2.so"
+        },
+        {
+            "type": "FileCopyMod",
+            "sourceFileName": "libil2cpp_codegen.so",
+            "targetRootedPathAndFileName": "/sdcard/Android/data/com.beatgames.beatsaber/files/libs/libil2cpp_codegen.so"
+        }
+    ]
+}
