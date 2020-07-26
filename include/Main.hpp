@@ -62,6 +62,7 @@ static struct Config_t {
 	bool blueToRed = false;
     bool Vaccum = false;
     bool Centering = false;
+    bool BoxingMode = false;
 } Config;
 
 extern void SaveConfig();

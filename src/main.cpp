@@ -72,6 +72,14 @@ MAKE_HOOK_OFFSETLESS(NoteMovement_Init, void, NoteMovement* self, float beatTime
         moveStartPos.z = moveStartPos.z * 2;
         moveEndPos.z = moveEndPos.z * 2;
         jumpEndPos.z = jumpEndPos.z * 2;
+        float num = Config.parabolaOffsetY;
+        bool boxing = Config.BoxingMode;
+        if (boxing)
+	        num -= 0.3f;
+
+        moveStartPos.y += num;
+	    moveEndPos.y += num;
+	    jumpEndPos.y += num;
     }
     NoteMovement_Init(self, beatTime, worldRotation, moveStartPos, moveEndPos, jumpEndPos, moveDuration, jumpDuration, jumpGravity, flipYSide, cutDirection, cutDirectionAngleOffset);
 }
@@ -112,6 +120,18 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectManager_SpawnBasicNote, void, BeatmapObjectMan
     BeatmapObjectManager_SpawnBasicNote(self, noteData, moveStartPos, moveEndPos, jumpEndPos, moveDuration, jumpDuration, jumpGravity, rotation, disappearingArrow, ghostNote, cutDirectionAngleOffset);
 }
 
+MAKE_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, void, NoteBasicCutInfo* self, UnityEngine::Transform* noteTransform, GlobalNamespace::NoteType noteType, GlobalNamespace::NoteCutDirection cutDirection, GlobalNamespace::SaberType saberType, float saberBladeSpeed, UnityEngine::Vector3 cutDirVec, bool& directionOK, bool& speedOK, bool& saberTypeOK, float& cutDirDeviation) {
+    if(Config.BoxingMode || Config.Vaccum)
+        saberBladeSpeed = 3.0f;
+
+    NoteBasicCutInfo_GetBasicCutInfo(self, noteTransform, noteType, cutDirection, saberType, saberBladeSpeed, cutDirVec, directionOK, speedOK, saberTypeOK, cutDirDeviation);
+    if(Config.Vaccum && (noteType.value != 3))
+    {
+        directionOK = true;
+        saberTypeOK = true;
+    }
+}
+
 void SaveConfig() {
     getConfig().config.RemoveAllMembers();
     getConfig().config.SetObject();
@@ -124,6 +144,7 @@ void SaveConfig() {
 	getConfig().config.AddMember("Parabola Offset Y", Config.parabolaOffsetY, allocator);
     getConfig().config.AddMember("Vaccum", Config.Vaccum, allocator);
     getConfig().config.AddMember("Center Notes", Config.Centering, allocator);
+    getConfig().config.AddMember("Boxing Mode", Config.BoxingMode, allocator);
 
     getConfig().Write();
 }   
@@ -179,6 +200,12 @@ bool LoadConfig() {
     else {
         foundEverything = false;
     }
+    if (getConfig().config.HasMember("Boxing Mode") && getConfig().config["Boxing Mode"].IsBool()) {
+        Config.BoxingMode = getConfig().config["Boxing Mode"].GetBool();
+    }
+    else {
+        foundEverything = false;
+    }
 
     if (foundEverything) {
         return true;
@@ -189,7 +216,7 @@ bool LoadConfig() {
 extern "C" void setup(ModInfo& info) {
     // Set the ID and version of this mod
     info.id = "Badminton";
-    info.version = "0.1.1";
+    info.version = "0.1.2";
     modInfo = info;
 
     getLogger().info("Modloader name: %s", Modloader::getInfo().name.c_str());
@@ -214,5 +241,6 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(BeatmapObjectManager_SpawnBasicNote, FindMethodUnsafe("", "BeatmapObjectManager", "SpawnBasicNote", 11));
     INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnNoteCutEffect", 3));
     INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnBombCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnBombCutEffect", 3));
+    INSTALL_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, FindMethodUnsafe("", "NoteBasicCutInfo", "GetBasicCutInfo", 10));
     getLogger().debug("Installed all hooks!");
 }
