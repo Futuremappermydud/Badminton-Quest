@@ -207,8 +207,8 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(NoteMovement_Init, FindMethodUnsafe("", "NoteMovement", "Init", 11));
     INSTALL_HOOK_OFFSETLESS(ScoreDisabler, FindMethodUnsafe("OnlineServices", "LevelScoreUploader", "SendLevelScoreResult", 1));
     INSTALL_HOOK_OFFSETLESS(PlayerController_Update, FindMethodUnsafe("", "PlayerController", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnNoteCutEffect", 3));
-    INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnBombCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnBombCutEffect", 3));
+    //INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnNoteCutEffect", 3));
+    //INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnBombCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnBombCutEffect", 3));
 
     getLogger().debug("Installed all hooks!");
 }
