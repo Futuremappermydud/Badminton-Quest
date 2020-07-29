@@ -16,7 +16,7 @@ namespace GlobalNamespace {
   // Skipping declaration: MenuButton because it is already included!
 }
 // Forward declaring namespace: UnityEngine::UI
-namespace UnityEngine::UI {
+namespace UnityEngine:UI {
   // Forward declaring type: Button
   class Button;
 }

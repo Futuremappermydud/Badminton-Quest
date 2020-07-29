@@ -4,6 +4,7 @@ using namespace GlobalNamespace;
 using namespace OnlineServices;
 using namespace UnityEngine;
 using namespace il2cpp_utils;
+using namespace HMUI;
 
 Mathf math;
 
@@ -15,6 +16,8 @@ UnityEngine::Vector3 _prevHeadPos = UnityEngine::Vector3{0, 0, 0};
 UnityEngine::Vector3 _prevLeftHandlePos = UnityEngine::Vector3{0, 0, 0};
 
 UnityEngine::Vector3 _prevRightHandlePos = UnityEngine::Vector3{0, 0, 0};
+
+UnityEngine::Vector3 TopBladePos;
 
 void SetTimeScale(float timeScale)
 {
@@ -58,7 +61,7 @@ MAKE_HOOK_OFFSETLESS(NoteJump_ManualUpdate, UnityEngine::Vector3, NoteJump* self
 
         return Result;
     }
-
+    getLogger().info(std::to_string(Config.Vaccum));
     if(Config.Vaccum)
     {
         float time = self->audioTimeSyncController->songTime - self->beatTime + self->jumpDuration * 0.5f;
@@ -81,6 +84,7 @@ MAKE_HOOK_OFFSETLESS(NoteJump_ManualUpdate, UnityEngine::Vector3, NoteJump* self
             return Result;
         }
     }
+    return NoteJump_ManualUpdate(self);
 }
 
 MAKE_HOOK_OFFSETLESS(NoteMovement_Init, void, NoteMovement* self, float beatTime, float worldRotation, UnityEngine::Vector3 moveStartPos, UnityEngine::Vector3 moveEndPos, UnityEngine::Vector3 jumpEndPos, float moveDuration, float jumpDuration, float jumpGravity, float flipYSide, NoteCutDirection cutDirection, float cutDirectionAngleOffset) {
@@ -101,6 +105,14 @@ MAKE_HOOK_OFFSETLESS(NoteMovement_Init, void, NoteMovement* self, float beatTime
     NoteMovement_Init(self, beatTime, worldRotation, moveStartPos, moveEndPos, jumpEndPos, moveDuration, jumpDuration, jumpGravity, flipYSide, cutDirection, cutDirectionAngleOffset);
 }
 
+MAKE_HOOK_OFFSETLESS(FlyingObjectEffect_Update, void, FlyingObjectEffect* self) {
+    if(Config.Vaccum)
+    {
+       self->targetPos = TopBladePos;
+    }
+    FlyingObjectEffect_Update(self);
+}
+
 MAKE_HOOK_OFFSETLESS(ScoreDisabler, void, LevelScoreUploader* self, LevelScoreResultsData* levelScoreResultsData) {
     if(Config.parabola || Config.blueToRed || Config.redToBlue || Config.noBlue || Config.noRed || Config.Vaccum || Config.Centering || Config.Headbang || Config.SuperHot || Config.BoxingMode)
     {
@@ -113,13 +125,8 @@ MAKE_HOOK_OFFSETLESS(ScoreDisabler, void, LevelScoreUploader* self, LevelScoreRe
     ScoreDisabler(self, levelScoreResultsData);
 }
 
-MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
-    //if(audioSync != nullptr)
-    //{
-    //    auto audioSyncs = Resources::FindObjectsOfTypeAll<AudioTimeSyncController>();
-    //    audioSync = audioSyncs->values;
-    //}
-    
+MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {  
+    TopBladePos = self->get_rightSaber()->get_saberBladeTopPos();
     if(Config.Headbang)
     {
         self->get_rightSaber()->get_transform()->set_rotation(self->get_headRot());
@@ -138,7 +145,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
         self->get_leftSaber()->get_transform()->set_localScale(UnityEngine::Vector3{2.0f, 2.0f, 0.5f});
     }
 
-    /*if(Config.BoxingMode)
+    if(Config.BoxingMode)
     {
         self->get_rightSaber()->get_transform()->Translate(UnityEngine::Vector3{0.00f, 0.0f, -0.23f}, 1);
         self->get_leftSaber()->get_transform()->Translate(UnityEngine::Vector3{0.00f, 0.0f, -0.23f}, 1);
@@ -146,7 +153,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
         self->get_rightSaber()->get_transform()->set_localScale(UnityEngine::Vector3{4.0f, 4.0f, 0.25f});
         self->get_leftSaber()->get_transform()->set_localScale(UnityEngine::Vector3{4.0f, 4.0f, 0.25f});   
     }
-
+    
     if(Config.SuperHot && audioSync != nullptr)
     {
         float num = 0.0f;
@@ -157,7 +164,15 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
         _prevHeadPos = self->get_headPos();
         _prevLeftHandlePos = self->get_leftSaber()->get_handlePos();
         _prevRightHandlePos = self->get_rightSaber()->get_handlePos();
-    }*/
+    }
+
+    self->get_leftSaber()->get_gameObject()->SetActive(Config.blueToRed || (!Config.noRed && !Config.redToBlue));
+    self->get_rightSaber()->get_gameObject()->SetActive(Config.redToBlue || (!Config.noBlue && !Config.blueToRed));
+
+    if(Config.Vaccum)
+    {
+        self->get_leftSaber()->get_gameObject()->SetActive(false);
+    }
 
     PlayerController_Update(self);
 }
@@ -186,16 +201,61 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectManager_SpawnBasicNote, void, BeatmapObjectMan
     BeatmapObjectManager_SpawnBasicNote(self, noteData, moveStartPos, moveEndPos, jumpEndPos, moveDuration, jumpDuration, jumpGravity, rotation, disappearingArrow, ghostNote, cutDirectionAngleOffset);
 }
 
-MAKE_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, void, NoteBasicCutInfo* self, UnityEngine::Transform* noteTransform, GlobalNamespace::NoteType noteType, GlobalNamespace::NoteCutDirection cutDirection, GlobalNamespace::SaberType saberType, float saberBladeSpeed, UnityEngine::Vector3 cutDirVec, bool& directionOK, bool& speedOK, bool& saberTypeOK, float& cutDirDeviation) {
+MAKE_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, void, UnityEngine::Transform* noteTransform, GlobalNamespace::NoteType noteType, GlobalNamespace::NoteCutDirection cutDirection, GlobalNamespace::SaberType saberType, float saberBladeSpeed, UnityEngine::Vector3 cutDirVec, bool& directionOK, bool& speedOK, bool& saberTypeOK, float& cutDirDeviation) {
     if(Config.BoxingMode || Config.Vaccum)
         saberBladeSpeed = 3.0f;
 
-    //NoteBasicCutInfo_GetBasicCutInfo(self, noteTransform, noteType, cutDirection, saberType, saberBladeSpeed, cutDirVec, directionOK, speedOK, saberTypeOK, cutDirDeviation);
+    NoteBasicCutInfo_GetBasicCutInfo(noteTransform, noteType, cutDirection, saberType, saberBladeSpeed, cutDirVec, directionOK, speedOK, saberTypeOK, cutDirDeviation);
     if(Config.Vaccum && (noteType.value != 3))
     {
         directionOK = true;
         saberTypeOK = true;
     }
+}
+
+void ReloadConfig()
+{
+    LoadConfig();
+}
+
+Il2CppObject* PlayButton;
+
+Il2CppObject* ReloadButton;
+Il2CppObject* ReloadButtonTMP;
+
+void Destroy(Il2CppObject* obj)
+{
+    RunMethod("UnityEngine", "Object", "Destroy", obj);
+}
+
+MAKE_HOOK_OFFSETLESS(MainMenuViewController_DidActivate, void, Il2CppObject* self, bool firstActivation, int activationType) {
+    MainMenuViewController_DidActivate(self, firstActivation, activationType);
+    if (!firstActivation)
+    {
+        Destroy(CRASH_UNLESS(GetPropertyValue(ReloadButton, "gameObject")));
+    }
+    UnityEngine::Vector3 Pos = {0, 0, 2.6f};
+    UnityEngine::Vector3 Scale = {1, 1, 1};
+	PlayButton = *GetFieldValue(self, "_settingsButton");	
+	ReloadButton = *RunMethod("UnityEngine", "Object", "Instantiate", PlayButton);
+    auto PlayButtonTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(PlayButton, "get_transform"));
+    auto parent = CRASH_UNLESS(il2cpp_utils::RunMethod(PlayButtonTransform, "get_parent"));
+    Il2CppObject* OnClick = CRASH_UNLESS(il2cpp_utils::GetPropertyValue(ReloadButton, "onClick"));
+	std::string ReloadButtonText = "Reload \n<size=70%>Nalululuna Modifier</size>\n Config";
+	auto ReloadButtonTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(ReloadButton, "get_transform"));
+	RunMethod(ReloadButtonTransform, "SetParent", parent);
+	RunMethod(ReloadButtonTransform, "set_position", Pos);
+    RunMethod(ReloadButtonTransform, "set_localScale", Scale);
+    Il2CppObject* ReloadButtonObj2 = *RunMethod(ReloadButton, "get_gameObject");
+    ReloadButtonTMP = *RunMethod(ReloadButtonObj2, "GetComponentInChildren", GetSystemType("TMPro", "TextMeshProUGUI"));
+    auto ReloadButtonTMPLocalizer = *RunMethod(ReloadButtonObj2, "GetComponentInChildren", GetSystemType("Polyglot", "LocalizedTextMeshProUGUI"));
+    if (ReloadButtonTMPLocalizer != nullptr)
+    {
+        Destroy(ReloadButtonTMPLocalizer);
+    }
+    RunMethod(ReloadButtonTMP, "set_text", createcsstr(ReloadButtonText));
+    auto action = MakeAction(il2cpp_functions::class_get_type(il2cpp_utils::GetClassFromName("UnityEngine.Events", "UnityAction")), (Il2CppObject*)nullptr, ReloadConfig);
+    RunMethod(OnClick, "AddListener", action);
 }
 
 void SaveConfig() {
@@ -211,8 +271,8 @@ void SaveConfig() {
     getConfig().config.AddMember("Vaccum", Config.Vaccum, allocator);
     getConfig().config.AddMember("Center Notes", Config.Centering, allocator);
     getConfig().config.AddMember("Boxing Mode", Config.BoxingMode, allocator);
-    getConfig().config.AddMember("Super Hot", Config.SuperHot, allocator);
     getConfig().config.AddMember("Head Bang", Config.Headbang, allocator);
+    getConfig().config.AddMember("Super Hot", Config.SuperHot, allocator);
 
     getConfig().Write();
 }   
@@ -286,7 +346,6 @@ bool LoadConfig() {
     else {
         foundEverything = false;
     }
-
     if (foundEverything) {
         return true;
     }
@@ -295,8 +354,8 @@ bool LoadConfig() {
 
 extern "C" void setup(ModInfo& info) {
     // Set the ID and version of this mod
-    info.id = "Badminton";
-    info.version = "0.1.2";
+    info.id = "Naluluna Modifier";
+    info.version = "0.1.3";
     modInfo = info;
 
     getLogger().info("Modloader name: %s", Modloader::getInfo().name.c_str());
@@ -315,13 +374,15 @@ extern "C" void load() {
 
     il2cpp_functions::Init();
 
-    INSTALL_HOOK_OFFSETLESS(NoteJump_ManualUpdate, FindMethodUnsafe("", "NoteJump", "ManualUpdate", 0));
-    INSTALL_HOOK_OFFSETLESS(PlayerController_Update, FindMethodUnsafe("", "PlayerController", "Update", 0));
+    INSTALL_HOOK_OFFSETLESS(NoteJump_ManualUpdate, FindMethod("", "NoteJump", "ManualUpdate"));
+    INSTALL_HOOK_OFFSETLESS(PlayerController_Update, FindMethod("", "PlayerController", "Update"));
     INSTALL_HOOK_OFFSETLESS(NoteMovement_Init, FindMethodUnsafe("", "NoteMovement", "Init", 11));
     INSTALL_HOOK_OFFSETLESS(ScoreDisabler, FindMethodUnsafe("OnlineServices", "LevelScoreUploader", "SendLevelScoreResult", 1));
     INSTALL_HOOK_OFFSETLESS(BeatmapObjectManager_SpawnBasicNote, FindMethodUnsafe("", "BeatmapObjectManager", "SpawnBasicNote", 11));
     INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnNoteCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnNoteCutEffect", 3));
     INSTALL_HOOK_OFFSETLESS(NoteCutEffectSpawner_SpawnBombCutEffect, FindMethodUnsafe("", "NoteCutEffectSpawner", "SpawnBombCutEffect", 3));
-    //INSTALL_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, FindMethodUnsafe("", "NoteBasicCutInfo", "GetBasicCutInfo", 10));
+    INSTALL_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, FindMethodUnsafe("", "NoteBasicCutInfo", "GetBasicCutInfo", 10));
+    INSTALL_HOOK_OFFSETLESS(FlyingObjectEffect_Update, FindMethod("", "FlyingObjectEffect", "Update"));
+    INSTALL_HOOK_OFFSETLESS(MainMenuViewController_DidActivate, FindMethodUnsafe("", "MainMenuViewController", "DidActivate", 2));
     getLogger().debug("Installed all hooks!");
 }

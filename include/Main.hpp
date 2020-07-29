@@ -11,6 +11,9 @@
 #include "codegen/include/GlobalNamespace/NoteCutInfo.hpp"
 #include "codegen/include/GlobalNamespace/Saber.hpp"
 #include "codegen/include/GlobalNamespace/NoteCutEffectSpawner.hpp"
+#include "codegen/include/GlobalNamespace/FlyingObjectEffect.hpp"
+
+
 
 #include "codegen/include/OnlineServices/LevelScoreUploader.hpp"
 #include "codegen/include/OnlineServices/LevelScoreResultsData.hpp"
@@ -21,8 +24,12 @@
 #include "codegen/include/UnityEngine/Resources.hpp"
 #include "codegen/include/UnityEngine/Space.hpp"
 #include "codegen/include/UnityEngine/AudioSource.hpp"
+#include "codegen/include/UnityEngine/GameObject.hpp"
+#include "codegen/include/UnityEngine/Object.hpp"
 
 #include "codegen/include/System/Linq/Enumerable.hpp"
+
+#include "codegen/include/HMUI/ViewController.hpp"
 
 #include <unordered_set>  // specific types that you might want here
 
@@ -56,16 +63,16 @@ static const Logger& getLogger() {
 }
 
 static struct Config_t {
-    bool parabola = true;
+    bool parabola = false;
     float parabolaOffsetY = 1.8000000000f;
 	bool noBlue = false;
 	bool noRed = false;
-	bool redToBlue = true;
+	bool redToBlue = false;
 	bool blueToRed = false;
     bool Vaccum = false;
     bool Centering = false;
     bool BoxingMode = false;
-    bool SuperHot = false;
+    bool SuperHot = true;
     bool Headbang = false;
 } Config;
 
