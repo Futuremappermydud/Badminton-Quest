@@ -12,8 +12,7 @@
 #include "codegen/include/GlobalNamespace/Saber.hpp"
 #include "codegen/include/GlobalNamespace/NoteCutEffectSpawner.hpp"
 #include "codegen/include/GlobalNamespace/FlyingObjectEffect.hpp"
-
-
+#include "codegen/include/GlobalNamespace/MainMenuViewController.hpp"
 
 #include "codegen/include/OnlineServices/LevelScoreUploader.hpp"
 #include "codegen/include/OnlineServices/LevelScoreResultsData.hpp"
@@ -26,10 +25,14 @@
 #include "codegen/include/UnityEngine/AudioSource.hpp"
 #include "codegen/include/UnityEngine/GameObject.hpp"
 #include "codegen/include/UnityEngine/Object.hpp"
+#include "codegen/include/UnityEngine/UI/Button.hpp"
 
-#include "codegen/include/System/Linq/Enumerable.hpp"
+#include "codegen/include/TMPro/TextMeshProUGUI.hpp"
+
+#include "codegen/include/Polyglot/LocalizedTextMeshProUGUI.hpp"
 
 #include "codegen/include/HMUI/ViewController.hpp"
+#include "codegen/include/HMUI/ViewController_ActivationType.hpp"
 
 #include <unordered_set>  // specific types that you might want here
 

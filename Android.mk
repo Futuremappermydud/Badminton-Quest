@@ -37,6 +37,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE	        := code-gen
 LOCAL_SRC_FILES         := ./libil2cpp_codegen.so
 LOCAL_EXPORT_C_INCLUDES := ./include/codegen/include
+LOCAL_EXPORT_CFLAGS := -Wno-inaccessible-base
 include $(PREBUILT_SHARED_LIBRARY)
 
 # If you would like to use more shared libraries (such as custom UI, utils, or more) add them here, following the format above.

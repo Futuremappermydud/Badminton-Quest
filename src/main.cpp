@@ -5,6 +5,7 @@ using namespace OnlineServices;
 using namespace UnityEngine;
 using namespace il2cpp_utils;
 using namespace HMUI;
+using namespace UnityEngine::UI;
 
 Mathf math;
 
@@ -215,47 +216,39 @@ MAKE_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, void, UnityEngine::Transf
 
 void ReloadConfig()
 {
-    LoadConfig();
+    if(!LoadConfig())
+    {
+        SaveConfig();
+    }
 }
 
-Il2CppObject* PlayButton;
+GameObject* PlayButton;
 
-Il2CppObject* ReloadButton;
-Il2CppObject* ReloadButtonTMP;
+GameObject* ReloadButton;
+TMPro::TextMeshProUGUI* ReloadButtonTMP;
 
 void Destroy(Il2CppObject* obj)
 {
     RunMethod("UnityEngine", "Object", "Destroy", obj);
 }
 
-MAKE_HOOK_OFFSETLESS(MainMenuViewController_DidActivate, void, Il2CppObject* self, bool firstActivation, int activationType) {
+MAKE_HOOK_OFFSETLESS(MainMenuViewController_DidActivate, void, MainMenuViewController* self, bool firstActivation, ViewController::ActivationType activationType) {
     MainMenuViewController_DidActivate(self, firstActivation, activationType);
     if (!firstActivation)
     {
-        Destroy(CRASH_UNLESS(GetPropertyValue(ReloadButton, "gameObject")));
+        Object::Destroy(ReloadButton);
     }
     UnityEngine::Vector3 Pos = {0, 0, 2.6f};
     UnityEngine::Vector3 Scale = {1, 1, 1};
-	PlayButton = *GetFieldValue(self, "_settingsButton");	
-	ReloadButton = *RunMethod("UnityEngine", "Object", "Instantiate", PlayButton);
-    auto PlayButtonTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(PlayButton, "get_transform"));
-    auto parent = CRASH_UNLESS(il2cpp_utils::RunMethod(PlayButtonTransform, "get_parent"));
-    Il2CppObject* OnClick = CRASH_UNLESS(il2cpp_utils::GetPropertyValue(ReloadButton, "onClick"));
-	std::string ReloadButtonText = "Reload \n<size=70%>Nalululuna Modifier</size>\n Config";
-	auto ReloadButtonTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(ReloadButton, "get_transform"));
-	RunMethod(ReloadButtonTransform, "SetParent", parent);
-	RunMethod(ReloadButtonTransform, "set_position", Pos);
-    RunMethod(ReloadButtonTransform, "set_localScale", Scale);
-    Il2CppObject* ReloadButtonObj2 = *RunMethod(ReloadButton, "get_gameObject");
-    ReloadButtonTMP = *RunMethod(ReloadButtonObj2, "GetComponentInChildren", GetSystemType("TMPro", "TextMeshProUGUI"));
-    auto ReloadButtonTMPLocalizer = *RunMethod(ReloadButtonObj2, "GetComponentInChildren", GetSystemType("Polyglot", "LocalizedTextMeshProUGUI"));
-    if (ReloadButtonTMPLocalizer != nullptr)
-    {
-        Destroy(ReloadButtonTMPLocalizer);
-    }
-    RunMethod(ReloadButtonTMP, "set_text", createcsstr(ReloadButtonText));
-    auto action = MakeAction(il2cpp_functions::class_get_type(il2cpp_utils::GetClassFromName("UnityEngine.Events", "UnityAction")), (Il2CppObject*)nullptr, ReloadConfig);
-    RunMethod(OnClick, "AddListener", action);
+
+    PlayButton = self->settingsButton->get_gameObject();
+
+	//ReloadButton = Object::Instantiate(PlayButton);
+
+    //ReloadButton->get_transform()->set_parent(PlayButton->get_transform()->get_parent());
+    
+    //auto action = MakeAction(il2cpp_functions::class_get_type(il2cpp_utils::GetClassFromName("UnityEngine.Events", "UnityAction")), (Il2CppObject*)nullptr, ReloadConfig);
+    //RunMethod(ReloadButton->GetComponent<Button*>()->get_onClick(), "AddListener", action);
 }
 
 void SaveConfig() {
