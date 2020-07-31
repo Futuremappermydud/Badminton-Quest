@@ -77,6 +77,9 @@ static struct Config_t {
     bool BoxingMode = false;
     bool SuperHot = true;
     bool Headbang = false;
+    bool FootContact = false;
+    bool Foot = false;
+    bool RotateController180 = false;
 } Config;
 
 extern void SaveConfig();

@@ -85,6 +85,16 @@ MAKE_HOOK_OFFSETLESS(NoteJump_ManualUpdate, UnityEngine::Vector3, NoteJump* self
             return Result;
         }
     }
+
+    if(Config.Foot)
+    {
+        self->localPosition.y = 0.1f;
+        UnityEngine::Vector3 Result = self->worldRotation * self->localPosition;
+
+        self->get_transform()->set_position(Result);
+
+        return Result;
+    }
     return NoteJump_ManualUpdate(self);
 }
 
@@ -103,6 +113,13 @@ MAKE_HOOK_OFFSETLESS(NoteMovement_Init, void, NoteMovement* self, float beatTime
 	    moveEndPos.y += num;
 	    jumpEndPos.y += num;
     }
+    if(Config.Foot)
+    {
+        moveStartPos.y = 0.1f;
+        moveEndPos.y = 0.1f;
+        jumpEndPos = 0.1f;
+
+    }
     NoteMovement_Init(self, beatTime, worldRotation, moveStartPos, moveEndPos, jumpEndPos, moveDuration, jumpDuration, jumpGravity, flipYSide, cutDirection, cutDirectionAngleOffset);
 }
 
@@ -115,7 +132,7 @@ MAKE_HOOK_OFFSETLESS(FlyingObjectEffect_Update, void, FlyingObjectEffect* self) 
 }
 
 MAKE_HOOK_OFFSETLESS(ScoreDisabler, void, LevelScoreUploader* self, LevelScoreResultsData* levelScoreResultsData) {
-    if(Config.parabola || Config.blueToRed || Config.redToBlue || Config.noBlue || Config.noRed || Config.Vaccum || Config.Centering || Config.Headbang || Config.SuperHot || Config.BoxingMode)
+    if(Config.parabola || Config.blueToRed || Config.redToBlue || Config.noBlue || Config.noRed || Config.Vaccum || Config.Centering || Config.Headbang || Config.SuperHot || Config.BoxingMode || Config.RotateController180 || Config.Foot || Config.FootContact)
     {
         setenv("disable_ss_upload", "1", true);
         return;
@@ -145,7 +162,11 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, PlayerController* self) {
         self->get_rightSaber()->get_transform()->set_localScale(UnityEngine::Vector3{2.0f, 2.0f, 0.5f});
         self->get_leftSaber()->get_transform()->set_localScale(UnityEngine::Vector3{2.0f, 2.0f, 0.5f});
     }
-
+    if(Config.RotateController180)
+    {
+        self->get_rightSaber()->get_transform()->Rotate(0, 180, 0);
+        self->get_leftSaber()->get_transform()->Rotate(0, 180, 0);
+    }
     if(Config.BoxingMode)
     {
         self->get_rightSaber()->get_transform()->Translate(UnityEngine::Vector3{0.00f, 0.0f, -0.23f}, 1);
@@ -203,9 +224,15 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectManager_SpawnBasicNote, void, BeatmapObjectMan
 }
 
 MAKE_HOOK_OFFSETLESS(NoteBasicCutInfo_GetBasicCutInfo, void, UnityEngine::Transform* noteTransform, GlobalNamespace::NoteType noteType, GlobalNamespace::NoteCutDirection cutDirection, GlobalNamespace::SaberType saberType, float saberBladeSpeed, UnityEngine::Vector3 cutDirVec, bool& directionOK, bool& speedOK, bool& saberTypeOK, float& cutDirDeviation) {
-    if(Config.BoxingMode || Config.Vaccum)
+    if(Config.BoxingMode || Config.Vaccum || Config.Headbang || Config.FootContact)
         saberBladeSpeed = 3.0f;
-
+    else   
+    {
+        if(Config.Foot)
+        {
+            saberBladeSpeed = saberBladeSpeed * 2.0f; 
+        }
+    }
     NoteBasicCutInfo_GetBasicCutInfo(noteTransform, noteType, cutDirection, saberType, saberBladeSpeed, cutDirVec, directionOK, speedOK, saberTypeOK, cutDirDeviation);
     if(Config.Vaccum && (noteType.value != 3))
     {
@@ -222,33 +249,44 @@ void ReloadConfig()
     }
 }
 
-GameObject* PlayButton;
+Il2CppObject* PlayButton;
 
-GameObject* ReloadButton;
-TMPro::TextMeshProUGUI* ReloadButtonTMP;
+Il2CppObject* ReloadButton;
+Il2CppObject* ReloadButtonTMP;
 
 void Destroy(Il2CppObject* obj)
 {
     RunMethod("UnityEngine", "Object", "Destroy", obj);
 }
 
-MAKE_HOOK_OFFSETLESS(MainMenuViewController_DidActivate, void, MainMenuViewController* self, bool firstActivation, ViewController::ActivationType activationType) {
+MAKE_HOOK_OFFSETLESS(MainMenuViewController_DidActivate, void, Il2CppObject* self, bool firstActivation, int activationType) {
     MainMenuViewController_DidActivate(self, firstActivation, activationType);
     if (!firstActivation)
     {
-        Object::Destroy(ReloadButton);
+        Destroy(CRASH_UNLESS(GetPropertyValue(ReloadButton, "gameObject")));
     }
     UnityEngine::Vector3 Pos = {0, 0, 2.6f};
     UnityEngine::Vector3 Scale = {1, 1, 1};
-
-    PlayButton = self->settingsButton->get_gameObject();
-
-	//ReloadButton = Object::Instantiate(PlayButton);
-
-    //ReloadButton->get_transform()->set_parent(PlayButton->get_transform()->get_parent());
-    
-    //auto action = MakeAction(il2cpp_functions::class_get_type(il2cpp_utils::GetClassFromName("UnityEngine.Events", "UnityAction")), (Il2CppObject*)nullptr, ReloadConfig);
-    //RunMethod(ReloadButton->GetComponent<Button*>()->get_onClick(), "AddListener", action);
+	PlayButton = *GetFieldValue(self, "_settingsButton");	
+	ReloadButton = *RunMethod("UnityEngine", "Object", "Instantiate", PlayButton);
+    auto PlayButtonTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(PlayButton, "get_transform"));
+    auto parent = CRASH_UNLESS(il2cpp_utils::RunMethod(PlayButtonTransform, "get_parent"));
+    Il2CppObject* OnClick = CRASH_UNLESS(il2cpp_utils::GetPropertyValue(ReloadButton, "onClick"));
+	std::string ReloadButtonText = "Reload \n<size=70%>Nalululuna Modifier</size>\n Config";
+	auto ReloadButtonTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(ReloadButton, "get_transform"));
+	RunMethod(ReloadButtonTransform, "SetParent", parent);
+	RunMethod(ReloadButtonTransform, "set_position", Pos);
+    RunMethod(ReloadButtonTransform, "set_localScale", Scale);
+    Il2CppObject* ReloadButtonObj2 = *RunMethod(ReloadButton, "get_gameObject");
+    ReloadButtonTMP = *RunMethod(ReloadButtonObj2, "GetComponentInChildren", GetSystemType("TMPro", "TextMeshProUGUI"));
+    auto ReloadButtonTMPLocalizer = *RunMethod(ReloadButtonObj2, "GetComponentInChildren", GetSystemType("Polyglot", "LocalizedTextMeshProUGUI"));
+    if (ReloadButtonTMPLocalizer != nullptr)
+    {
+        Destroy(ReloadButtonTMPLocalizer);
+    }
+    RunMethod(ReloadButtonTMP, "set_text", createcsstr(ReloadButtonText));
+    auto action = MakeAction(il2cpp_functions::class_get_type(il2cpp_utils::GetClassFromName("UnityEngine.Events", "UnityAction")), (Il2CppObject*)nullptr, ReloadConfig);
+    RunMethod(OnClick, "AddListener", action);
 }
 
 void SaveConfig() {
@@ -266,6 +304,9 @@ void SaveConfig() {
     getConfig().config.AddMember("Boxing Mode", Config.BoxingMode, allocator);
     getConfig().config.AddMember("Head Bang", Config.Headbang, allocator);
     getConfig().config.AddMember("Super Hot", Config.SuperHot, allocator);
+    getConfig().config.AddMember("Rotate Controllers 180", Config.RotateController180, allocator);
+    getConfig().config.AddMember("Foot", Config.Foot, allocator);
+    getConfig().config.AddMember("Contact", Config.FootContact, allocator);
 
     getConfig().Write();
 }   
@@ -339,6 +380,25 @@ bool LoadConfig() {
     else {
         foundEverything = false;
     }
+    if (getConfig().config.HasMember("Rotate Controllers 180") && getConfig().config["Rotate Controllers 180"].IsBool()) {
+        Config.RotateController180 = getConfig().config["Rotate Controllers 180"].GetBool();
+    }
+    else {
+        foundEverything = false;
+    }
+    if (getConfig().config.HasMember("Foot") && getConfig().config["Foot"].IsBool()) {
+        Config.Foot = getConfig().config["Foot"].GetBool();
+    }
+    else {
+        foundEverything = false;
+    }
+    if (getConfig().config.HasMember("Contact") && getConfig().config["Contact"].IsBool()) {
+        Config.FootContact = getConfig().config["Contact"].GetBool();
+    }
+    else {
+        foundEverything = false;
+    }
+
     if (foundEverything) {
         return true;
     }
