@@ -21,21 +21,21 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 # Build the modloader shared library
 include $(CLEAR_VARS)
 LOCAL_MODULE	        := modloader
-LOCAL_SRC_FILES         := ./libmodloader.so
+LOCAL_SRC_FILES         := libmodloader.so
 LOCAL_EXPORT_C_INCLUDES := ./extern/beatsaber-hook/include/
 include $(PREBUILT_SHARED_LIBRARY)
 
 # Build the beatsaber-hook shared library, SPECIFICALLY VERSIONED!
 include $(CLEAR_VARS)
 LOCAL_MODULE	        := beatsaber-hook_2019_0_2_1
-LOCAL_SRC_FILES         := ./libbeatsaber-hook_2019_2_1f1_0_1_2.so
+LOCAL_SRC_FILES         := libbeatsaber-hook_2019_2_1f1_0_1_2.so
 LOCAL_EXPORT_C_INCLUDES := ./extern/beatsaber-hook/shared/
 include $(PREBUILT_SHARED_LIBRARY)
 
 # Build the code-gen shared library
 include $(CLEAR_VARS)
 LOCAL_MODULE	        := code-gen
-LOCAL_SRC_FILES         := ./libil2cpp_codegen.so
+LOCAL_SRC_FILES         := libil2cpp_codegen.so
 LOCAL_EXPORT_C_INCLUDES := ./include/codegen/include
 LOCAL_EXPORT_CFLAGS := -Wno-inaccessible-base
 include $(PREBUILT_SHARED_LIBRARY)
