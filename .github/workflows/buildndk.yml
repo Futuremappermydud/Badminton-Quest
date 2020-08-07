@@ -1,0 +1,56 @@
+name: NDK build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout
+      with:
+        submodules: true
+        lfs: true
+    - name: Install Powershell
+      run: sudo apt-get install -y powershell
+    
+    - name: Cache Android NDK
+      id: cache-ndk
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-ndk
+      with:
+        path: ndk
+        key: ${{ runner.os }}-${{ env.cache-name }}
+        restore-keys: |
+          ${{ runner.os }}-${{ env.cache-name }}
+      
+    - name: Install Android NDK
+      if: steps.cache-ndk.outputs.cache-hit != 'true'
+      env:
+        ndkname: android-ndk-r20
+      run: |
+        wget -q -O ndk.zip https://dl.google.com/android/repository/${ndkname}-linux-x86_64.zip
+        unzip -q ndk.zip
+        mv ${ndkname} ndk
+      
+    - name: Create ndkpath.txt
+      run: |
+        cd ndk
+        pwd > ${GITHUB_WORKSPACE}/ndkpath.txt
+      
+    - name: Build
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        pwsh -Command ./buildbmbf.ps1
+    - name: Upload non-debug artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: badminton_v0.1.3.zip
+        path: ./badminton_v0.1.3.zip
+        if-no-files-found: error
