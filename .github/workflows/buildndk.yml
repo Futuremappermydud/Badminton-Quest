@@ -47,7 +47,7 @@ jobs:
     - name: Build
       run: |
         cd ${GITHUB_WORKSPACE}
-        pwsh -Command ./buildbmbf.ps1
+        pwsh -Command ./buildBMBF.ps1
     - name: Upload non-debug artifact
       uses: actions/upload-artifact@v2
       with:
