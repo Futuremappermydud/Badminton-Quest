@@ -52,5 +52,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: badminton_v0.1.3.zip
-        path: ./badminton_v0.1.3.zip
+        path: badminton_v0.1.3.zip
         if-no-files-found: error
