@@ -21,7 +21,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 # Build the modloader shared library
 include $(CLEAR_VARS)
 LOCAL_MODULE	        := modloader
-LOCAL_SRC_FILES         := ./extern/beatsaber-hook/include/libs/libmodloader.so
+LOCAL_SRC_FILES         := libmodloader.so
 LOCAL_EXPORT_C_INCLUDES := ./extern/beatsaber-hook/include/
 include $(PREBUILT_SHARED_LIBRARY)
 
