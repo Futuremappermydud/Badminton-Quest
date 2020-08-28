@@ -27,15 +27,23 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 # Build the beatsaber-hook shared library, SPECIFICALLY VERSIONED!
 include $(CLEAR_VARS)
-LOCAL_MODULE	        := beatsaber-hook_2019_0_2_1
-LOCAL_SRC_FILES         := ./libbeatsaber-hook_2019_2_1f1_0_1_2.so
+LOCAL_MODULE	        := beatsaber-hook_0_4_7
+LOCAL_SRC_FILES         := ./extern/libbeatsaber-hook_0_4_7.so
 LOCAL_EXPORT_C_INCLUDES := ./extern/beatsaber-hook/shared/
 include $(PREBUILT_SHARED_LIBRARY)
 
 # Build the code-gen shared library
 include $(CLEAR_VARS)
-LOCAL_MODULE	        := code-gen
-LOCAL_SRC_FILES         := ./libil2cpp_codegen.so
+LOCAL_MODULE	        := code-gen_2_3
+LOCAL_SRC_FILES         := ./extern/libbs-utils_0_3_0.so
+LOCAL_EXPORT_C_INCLUDES := ./include/codegen/include
+LOCAL_EXPORT_CFLAGS := -Wno-inaccessible-base
+include $(PREBUILT_SHARED_LIBRARY)
+
+# Build the code-gen shared library
+include $(CLEAR_VARS)
+LOCAL_MODULE	        := bs-utils_0_3_0
+LOCAL_SRC_FILES         := ./extern/libcodegen_0_2_1.so
 LOCAL_EXPORT_C_INCLUDES := ./include/codegen/include
 LOCAL_EXPORT_CFLAGS := -Wno-inaccessible-base
 include $(PREBUILT_SHARED_LIBRARY)
@@ -46,11 +54,12 @@ include $(PREBUILT_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 # Include shared libraries
 LOCAL_SHARED_LIBRARIES += modloader
-LOCAL_SHARED_LIBRARIES += beatsaber-hook_2019_0_2_1
-LOCAL_SHARED_LIBRARIES += code-gen
+LOCAL_SHARED_LIBRARIES += beatsaber-hook_0_4_7
+LOCAL_SHARED_LIBRARIES += code-gen_2_3
+LOCAL_SHARED_LIBRARIES += bs-utils_0_3_0
 LOCAL_LDLIBS     := -llog
-LOCAL_CFLAGS     := -I'c:/Program Files/Unity/Hub/Editor/2019.3.1f1/Editor/Data/il2cpp/libil2cpp' -I'D:/!Badminton/include/codegen/include'
-LOCAL_MODULE     := badminton
+LOCAL_CFLAGS     := -I'c:/Program Files/Unity/Hub/Editor/2019.3.1f1/Editor/Data/il2cpp/libil2cpp' -I'D:/!Badminton/include/codegen/include'-I'D:/!Badminton/include/codegen/externm'
+LOCAL_MODULE     := Nalululuna_Modifier
 LOCAL_CPPFLAGS   := -std=c++2a
 LOCAL_C_INCLUDES := ./include ./src
 LOCAL_SRC_FILES  += $(call rwildcard,src/,*.cpp)

@@ -13,6 +13,13 @@
 #include "codegen/include/GlobalNamespace/NoteCutEffectSpawner.hpp"
 #include "codegen/include/GlobalNamespace/FlyingObjectEffect.hpp"
 #include "codegen/include/GlobalNamespace/MainMenuViewController.hpp"
+#include "codegen/include/GlobalNamespace/SaberClashChecker.hpp"
+#include "codegen/include/GlobalNamespace/SaberBurnMarkArea.hpp"
+#include "codegen/include/GlobalNamespace/SaberBurnMarkSparkles.hpp"
+#include "codegen/include/GlobalNamespace/GameEnergyCounter.hpp"
+
+#include "codegen/include/Xft/XWeaponTrail.hpp"
+#include "codegen/include/GlobalNamespace/XWeaponTrailRenderer.hpp"
 
 #include "codegen/include/OnlineServices/LevelScoreUploader.hpp"
 #include "codegen/include/OnlineServices/LevelScoreResultsData.hpp"
@@ -25,6 +32,7 @@
 #include "codegen/include/UnityEngine/AudioSource.hpp"
 #include "codegen/include/UnityEngine/GameObject.hpp"
 #include "codegen/include/UnityEngine/Object.hpp"
+#include "codegen/include/UnityEngine/MeshFilter.hpp"
 #include "codegen/include/UnityEngine/UI/Button.hpp"
 
 #include "codegen/include/TMPro/TextMeshProUGUI.hpp"
@@ -34,6 +42,8 @@
 #include "codegen/include/HMUI/ViewController.hpp"
 #include "codegen/include/HMUI/ViewController_ActivationType.hpp"
 
+#include "../extern/bs-utils/shared/utils.hpp"
+
 #include <unordered_set>  // specific types that you might want here
 
 // Any beatsaber-hook specific includes here
@@ -41,7 +51,7 @@
 #include "../extern/beatsaber-hook/shared/utils/utils.h"
 #include "../extern/beatsaber-hook/shared/utils/logging.hpp"
 // For displaying modloader information (ex: Modloader.getInfo().name)
-#include "../extern/beatsaber-hook/include/modloader.hpp"
+#include "../extern/modloader/shared/modloader.hpp"
 // For using il2cpp_utils:: methods
 #include "../extern/beatsaber-hook/shared/utils/il2cpp-utils.hpp" 
 // For using il2cpp_functions:: methods
@@ -77,9 +87,9 @@ static struct Config_t {
     bool BoxingMode = false;
     bool SuperHot = true;
     bool Headbang = false;
-    bool FootContact = false;
-    bool Foot = false;
     bool RotateController180 = false;
+    bool HideSabers = false;
+    bool HideSaberEffects = false;
 } Config;
 
 extern void SaveConfig();

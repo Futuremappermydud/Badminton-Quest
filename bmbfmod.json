@@ -8,28 +8,36 @@
         
     ],
     "category": "Gameplay",
-    "gameVersion": "1.10.0",
-    "version": "0.1.3",
+    "gameVersion": "1.11.1",
+    "version": "0.1.4",
     "platform": "Quest",
     "components": [
         {
             "type": "HookMod",
             "installAction": {
-                "installLibraryFile": "libbadminton.so"
+                "installLibraryFile": "libNalululuna_Modifier.so"
             },
             "uninstallAction": {
-                "removeLibraryFile": "libbadminton.so"
+                "removeLibraryFile": "libNalululuna_Modifier.so"
             }
         },
         {
-            "type": "FileCopyMod",
-            "sourceFileName": "libbeatsaber-hook_2019_2_1f1_0_1_2.so",
-            "targetRootedPathAndFileName": "/sdcard/Android/data/com.beatgames.beatsaber/files/libs/libbeatsaber-hook_2019_2_1f1_0_1_2.so"
+            "type": "HookModLibrary",
+            "installAction": {
+                "installLibraryFile": "libbeatsaber-hook_0_4_7.so"
+            }
         },
         {
-            "type": "FileCopyMod",
-            "sourceFileName": "libil2cpp_codegen.so",
-            "targetRootedPathAndFileName": "/sdcard/Android/data/com.beatgames.beatsaber/files/libs/libil2cpp_codegen.so"
+            "type": "HookModLibrary",
+            "installAction": {
+                "installLibraryFile": "libcodegen_0_2_1.so"
+            }
+        },
+        {
+            "type": "HookModLibrary",
+            "installAction": {
+                "installLibraryFile": "libbs-utils_0_3_0.so"
+            }
         }
     ]
 }
